@@ -8,6 +8,8 @@ public sealed class Settings
     public string? XeniaPath { get; set; }
     /// <summary>Open <see cref="LastWorkspace"/> at startup instead of showing the start page.</summary>
     public bool AutoOpenLast { get; set; }
+    /// <summary>Test in Xenia (F5) runs the game at 60 FPS (in memory only; never part of the workspace or exported mods).</summary>
+    public bool TestAt60Fps { get; set; } = true;
     /// <summary>The first-start "would you like a tour?" question was asked.</summary>
     public bool TourOffered { get; set; }
     /// <summary>The tour's second part (the editor) runs when the next workspace opens.</summary>

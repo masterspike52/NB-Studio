@@ -591,6 +591,7 @@ public sealed partial class MainForm : Form
             foreach (var m in NB.Core.Mods.ExePatches.All)
             {
                 if (NB.Core.Mods.ExePatches.FamilyOf(m.Id).Length > 0) continue;   // part limit / build area: set by value below
+                if (m == NB.Core.Mods.ExePatches.Fps60) continue;   // a test option (below), not a workspace mod
                 // a mod already built into this workspace's default.xex (e.g. by an applied map mod): shown ticked, nothing to switch
                 bool inGame = builtIn.Contains(m.Id);
                 var item = new ToolStripMenuItem(m.Name.Replace("&", "&&") + (inGame ? "   (already in this game)" : "")) { CheckOnClick = !inGame, Checked = inGame || _ws?.Manifest.ExeMods.Contains(m.Id) == true, Enabled = _ws != null && !inGame,
@@ -605,6 +606,12 @@ public sealed partial class MainForm : Form
                 };
                 mods.DropDownItems.Add(item);
             }
+            var fps = new ToolStripMenuItem("Test in Xenia at 60 FPS") { CheckOnClick = true, Checked = _settings.TestAt60Fps,
+                ToolTipText = "Test in Xenia (F5) runs the game at 60 frames per second instead of 30 (game speed stays the same).\nOnly for tests: it is applied in memory by Xenia and never goes into the workspace or exported mods." };
+            fps.Click += (_, _) => { _settings.TestAt60Fps = fps.Checked; _settings.Save(); Log($"Test in Xenia: {(fps.Checked ? "60" : "30")} FPS"); };
+            mods.DropDownItems.Add(new ToolStripSeparator());
+            mods.DropDownItems.Add(fps);
+            mods.DropDownItems.Add(new ToolStripSeparator());
             string? famNow(string fam) => _ws?.Manifest.ExeMods.LastOrDefault(i => NB.Core.Mods.ExePatches.FamilyOf(i) == fam);
             string modNow(string fam, string stock) { var i = famNow(fam); return i == null ? stock + " (stock)" : NB.Core.Mods.ExePatches.Resolve(i)?.Name ?? i; }
             mods.DropDownItems.Add(new ToolStripMenuItem($"Vehicle part limit… (now: {modNow("vehicle-part-limit", "250")})", null, (_, _) => EditExeLimit("vehicle-part-limit", "Vehicle part limit",
@@ -2531,6 +2538,9 @@ public sealed partial class MainForm : Form
         {
             var xb = File.ReadAllBytes(_ws.Game.Xex); var xex = XexFile.Read(xb); var img = xex.GetImage();
             var enabled = NB.Core.Mods.ExePatches.ResolveAll(_ws.Manifest.ExeMods).Where(m => NB.Core.Mods.ExePatches.Check(img, xex.ImageBase, m).Count == 0).ToList();
+            // Mods > Test in Xenia at 60 FPS (default on): in memory only, never in the workspace's files
+            var fps = NB.Core.Mods.ExePatches.Fps60;
+            if (_settings.TestAt60Fps && !enabled.Contains(fps) && NB.Core.Mods.ExePatches.Check(img, xex.ImageBase, fps).Count == 0) enabled.Add(fps);
             var hash = NB.Core.Mods.ExePatches.ResolveXeniaHash(NB.Core.Mods.ExePatches.XeniaModuleHash(xb, img), storage);
             if (hash == null) { if (enabled.Count > 0) Log("  executable mods: unknown default.xex (no module hash yet); they apply from the second test on."); return; }
             NB.Core.Mods.ExePatches.WriteXeniaPatchFile(storage, hash.Value, enabled);

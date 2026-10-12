@@ -2435,6 +2435,8 @@ public sealed partial class MainForm : Form
                 port = _qtPort = int.TryParse(Environment.GetEnvironmentVariable("NB_STUDIO_PAD_PORT"), out var fixedPort) ? fixedPort : QuickTest.FreeUdpPort();   // env: test harnesses
                 foreach (var a in new[] { $"--storage_root={storage}", $"--content_root={Path.Combine(storage, "content")}", $"--log_file={Path.Combine(storage, "xenia.log")}", "--network_mode=0",
                                           $"--nb_remote_input_port={port}", "--nb_create_profile=NBStudio", "--readback_resolve=fast" }) psi.ArgumentList.Add(a);
+                // background test runs: the test game reads only the virtual pad, never the user's own controller/keyboard
+                if (NB.Core.IO.QuietLaunch.Enabled) psi.ArgumentList.Add("--hid=nop");
             }
             else
             {

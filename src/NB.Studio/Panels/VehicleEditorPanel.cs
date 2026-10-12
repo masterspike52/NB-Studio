@@ -2148,6 +2148,14 @@ public sealed class VehicleEditorPanel : UserControl
                 log($"script: vault '{n}': listed {string.Join(", ", VehicleVault.Vehicles(dir).Where(x => x.Name == n).Select(x => $"{x.Hash[..8]} ({VehicleVault.PartsOf(dir, x)} parts)"))}; removed {string.Join(", ", VehicleVault.RemovedVehicles(dir).Where(x => x.Entry.Name == n).Select(x => $"{x.Entry.Hash[..8]} ({x.Why})"))}");
                 break;
             }
+            case "--vehicle-minbox":
+            {
+                int mx = 0, my = 0, mz = 0; var who = new List<string>();
+                foreach (var q in _doc.Parts) { var bx = VehicleDocument.Box(q, _cat?[q.B.Part]); if (bx.Min.X == int.MaxValue) continue; if (bx.Min.X < 0 || bx.Min.Y < 0 || bx.Min.Z < 0) who.Add($"{_cat?[q.B.Part]?.Key}@{q.X},{q.Y},{q.Z}o{q.Orientation}"); mx = Math.Min(mx, bx.Min.X); my = Math.Min(my, bx.Min.Y); mz = Math.Min(mz, bx.Min.Z); }
+                log($"script: minbox '{_doc.Name}' {mx},{my},{mz} {string.Join(" ", who.Take(6))}"); break;
+            }
+            case "--vehicle-boxes": foreach (var q in _doc.Parts) { var bx = VehicleDocument.Box(q, _cat?[q.B.Part]); log($"script: box {_cat?[q.B.Part]?.Key} at ({q.X},{q.Y},{q.Z}) o{q.Orientation}: {bx.Min} .. {bx.Max}"); } break;
+            case "--vehicle-header": log($"script: header {_doc.Source.Blocks.Count} parts {Convert.ToHexString(_doc.Source.Header, 0, 0x20)} | {Convert.ToHexString(_doc.Source.Header, 0x60, 0x1C)}"); break;
             case "--vehicle-untick": ScriptUntick = next().Split(';', StringSplitOptions.RemoveEmptyEntries).ToHashSet(); break;
             case "--vehicle-name-bytes":
             {

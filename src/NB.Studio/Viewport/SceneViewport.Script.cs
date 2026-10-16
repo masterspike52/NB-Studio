@@ -302,6 +302,7 @@ public sealed partial class SceneViewport
                 {
                     var d = mdl.Draws[di]; var mi = MaterialInfo.Of(d);
                     log($"script: draw #{di} node {d.Node} flags {d.SectionFlags:X} blend {mi.Blend} base {mi.Base} alpha {mi.AlphaTex} uv2 {(d.UVs2 != null)} layout [{string.Join(" ", d.Layout)}]");
+                    log($"    textures {string.Join(" | ", d.Textures.Select(t => $"s{t.Slot}:{t.Texture}"))}; export diffuse {ObjExporter.DiffuseTexture(d) ?? "- (grey)"}");
                     if (d.ColourVertexShader is { } vsx && d.Passes.Length > 0)
                         log("    interpolators: " + string.Join(" ", XenosShader.InterpolatorUvs(vsx, d.Passes[0].VsConstants, d.Layout).OrderBy(k => k.Key).Select(k => $"{(k.Key & 0xFF)}{((k.Key & XenosShader.ZwKey) != 0 ? ".zw" : ".xy")}=set{k.Value.Set}{(k.Value.Swap ? " swapped" : "")}{(k.Value.RowX != null ? $" rows {k.Value.RowX} {k.Value.RowY}" : "")}")) + $"; uv sets decoded: {(d.UVs != null ? 1 : 0) + (d.UVs2 != null ? 1 : 0) + (d.UVs3 != null ? 1 : 0)}");
                     if (mi.Shader is { } tr) { log($"    shader: {tr}; uv2 samplers [{string.Join(",", tr.SamplerUv2)}]"); if (di == 0) log(tr.Body); }

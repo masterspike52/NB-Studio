@@ -83,7 +83,9 @@ public sealed class MaterialInfo
         var last = n[(n.LastIndexOf('_') + 1)..];
         if (n.Contains("ambientocclusion") || last.EndsWith("ao") || last.Contains("ambient") || last == "occlusion") return Role.Ao;
         if (n.Contains("velvet") || last.StartsWith("blacktowhite") || last == "editable" || last == "parallax" || last == "height" || last == "colourchange" || last == "multiply") return Role.Ignore;
-        if (last.Contains("normal") || last is "nm" or "norm" or "bump" or "bmp" || last.EndsWith("nm") || last.EndsWith("bump") || last.EndsWith("bmp") || last.EndsWith("normals")) return Role.Normal;
+        // numbered variants too ("…_bump2", "…_normal2"): a normal map is never a colour
+        var lastN = last.TrimEnd('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
+        if (lastN.Contains("normal") || lastN is "nm" or "norm" or "bump" or "bmp" || lastN.EndsWith("nm") || lastN.EndsWith("bump") || lastN.EndsWith("bmp") || lastN.EndsWith("normals")) return Role.Normal;
         if (last.StartsWith("spec") || last.EndsWith("specmask")) return Role.Spec;
         if (n.Contains("reflectionmaps") || last.Contains("ref1") || last.StartsWith("hilight") || last.StartsWith("glasshighlights") || last == "egggold" || last == "blurrymetal") return Role.Reflect;
         if (last.Contains("colourandtrans")) return Role.Colour;
